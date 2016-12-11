@@ -62,6 +62,7 @@ def accented(verb):
     return verb
 
 
+
 def build_verb(verb, paradigm):
     root, suffix = split_word(verb, paradigm[0])
 
@@ -71,6 +72,12 @@ def build_verb(verb, paradigm):
     form_entry = form_entry.replace("ACCENTED", accented_root)
 
     return main_entry, form_entry
+
+def is_accented(word):
+    for symbol in "àòìùè":
+        if symbol in word:
+            return True
+    return False
 
 
 noun_pars = {"zioni": zioni, "iu": saccheggiu, "ia": oriccia, "ca": ripubbrica, "cu": parcu, "sioni": visioni,
@@ -82,7 +89,9 @@ verb_pars = {"iari": pigghiari, "iri": battiri, "cari": mancari}
 not_defined = []
 entries = []
 
+# You should change the separator string ----->
 separator = " "
+
 with open("word_list.txt", 'r', encoding='utf-8') as f:
     for line in f:
         word, PoS = line.strip().split(separator)
@@ -125,6 +134,10 @@ with open("word_list.txt", 'r', encoding='utf-8') as f:
             entries.append(build_paradigm(word, oggi))
 
         elif PoS == "v":
+            if is_accented(word):
+                not_defined.append((word, PoS))
+                continue
+
             for suffix in verb_pars:
                 if word.endswith(suffix):
                     pars = build_verb(word, verb_pars[suffix])
