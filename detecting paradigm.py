@@ -139,26 +139,9 @@ with open("word_list.txt", 'r', encoding='utf-8') as f:
 
             if not checked:
                 not_defined.append((word, PoS))
-            #
-            # if word.endswith("i") and 'm' in PoS:
-            #     entries.append(build_paradigm(word, patri))
-            # elif word.endswith("i") and 'f' in PoS:
-            #     entries.append(build_paradigm(word, matri))
-            # elif word.endswith("i") and "m/f" in PoS:
-            #     entries.append(build_paradigm(word, visitaturi))
-            # elif word.endswith("u") and "m" in PoS:
-            #     entries.append(build_paradigm(word, annu))
-            # elif word.endswith("cu") and "m/f" in PoS:
-            #     entries.append(build_paradigm(word, nimicu))
-            # elif word.endswith("a") and "f" in PoS:
-            #     entries.append(build_paradigm(word, casa))
-            # elif word.endswith("a") and "m" in PoS:
-            #     entries.append(build_paradigm(word, pianeta))
-            # elif word.endswith("a") and "m/f" in PoS:
-            #     entries.append(build_paradigm(word, chitarrista))
-            #
-            # else:
-            #     not_defined.append((word, PoS))
+            else:
+                continue
+
 
         elif PoS == "adj":
             for suffix in sorted(adj_pars, key=lambda x:len(x), reverse=True):
