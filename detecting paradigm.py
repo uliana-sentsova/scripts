@@ -13,11 +13,20 @@ visioni = '<e lm="LEMMA"><i>ROOT</i><par n="vi/sioni__n"/></e>'
 libirta = '<e lm="LEMMA"><i>ROOT</i><par n="libirtà__n"/></e>'
 giuvintuti = '<e lm="LEMMA"><i>ROOT</i><par n="giuvint/uti__n"/></e>'
 sucialismu = '<e lm="LEMMA"><i>ROOT</i><par n="sucialism/u__n"/></e>'
+pianeta = '<e lm="LEMMA"><i>ROOT</i><par n="pianet/a__n"/></e>'
+chitarrista = '<e lm="LEMMA"><i>ROOT</i><par n="chitarrist/a__n"/></e>'
+visitaturi = '<e lm="LEMMA"><i>ROOT</i><par n="visitatur/i__n"/></e>'
+nimicu = '<e lm="LEMMA"><i>ROOT</i><par n="nimic/u__n"/></e>'
+studenti = '<e lm="LEMMA"><i>ROOT</i><par n="studenti__n"/></e>'
+manu = '<e lm="LEMMA"><i>ROOT</i><par n="man/u__n"/></e>'
+citadinu = '<e lm="LEMMA"><i>ROOT</i><par n="citadin/u__n"/></e>'
+
 
 beddu = '<e lm="LEMMA"><i>ROOT</i><par n="bedd/u__adj"/></e>'
 eticu = '<e lm="LEMMA"><i>ROOT</i><par n="ètic/u__adj"/></e>'
 facista = '<e lm="LEMMA"><i>ROOT</i><par n="fascist/a__adj"/></e>'
 duci = '<e lm="LEMMA"><i>ROOT</i><par n="duci__adj"/></e>'
+lariu = '<e lm="LEMMA"><i>ROOT</i><par n="lar/iu__adj"/></e>'
 
 oggi = '<e lm="LEMMA"><i>ROOT</i><par n="oggi__adv"/></e>'
 
@@ -79,12 +88,18 @@ def is_accented(word):
             return True
     return False
 
+pars = {"zioni": zioni,  "ia": oriccia, "ca": ripubbrica,  "sioni": visioni, "ati": citati,
+        "uti":giuvintuti, "tà": libirta, "ìa": filusufia,  "ismu": sucialismu, "uri": visitaturi}
 
-noun_pars = {"zioni": zioni, "iu": saccheggiu, "ia": oriccia, "ca": ripubbrica, "cu": parcu, "sioni": visioni,
-                  "ìa": filusufia, "ati": citati, "uti": giuvintuti, "tà": libirta, "ismu": sucialismu}
-adj_pars = {"cu": eticu, "a": facista, "i": duci}
+noun_pars = {"f": {"zioni": zioni,  "ia": oriccia, "ca": ripubbrica,  "sioni": visioni,
+                    "ati": citati, "uti": giuvintuti, "tà": libirta, "ìa": filusufia,
+                    "a": casa, "i": matri, "u": manu},
+             "m": {"iu": saccheggiu, "cu": parcu, "ismu": sucialismu, "u": annu, "a": pianeta, "i": patri},
+             "m/f": {"cu": nimicu, "uri": visitaturi, "i": studenti, "a": chitarrista, "u": citadinu}}
 
-verb_pars = {"iari": pigghiari, "iri": battiri, "cari": mancari}
+adj_pars = {"cu": eticu, "a": facista, "i": duci, "u": beddu, "iu": lariu}
+
+verb_pars = {"iari": pigghiari, "iri": battiri, "cari": mancari, "ari": parrari}
 
 not_defined = []
 entries = []
@@ -94,66 +109,92 @@ separator = " "
 
 with open("word_list.txt", 'r', encoding='utf-8') as f:
     for line in f:
-        word, PoS = line.strip().split(separator)
-
         checked = False
+        try:
+            word, PoS = line.strip().split(separator)
+        except ValueError:
 
-        if PoS == "n":
-            for suffix in noun_pars:
-                if word.endswith(suffix):
-                    entries.append(build_paradigm(word, noun_pars[suffix]))
-                    checked = True
+            word = line.strip()
 
-            if checked:
-                continue
+            if word.endswith("ari") or word.endswith("iri"):
+                for suffix in sorted(verb_pars, key=len, reverse=True):
+                    pars = build_verb(word, verb_pars[suffix])
+                    for par in pars:
+                        entries.append(par)
+                    break
 
-            if word.endswith("i"):
-                not_defined.append((word, PoS))
-            elif word.endswith("u"):
-                entries.append(build_paradigm(word, annu))
-            elif word.endswith("a"):
-                entries.append(build_paradigm(word, casa))
             else:
+                for suffix in sorted(pars, key=len, reverse=True):
+                    if word.endswith(suffix):
+                        entries.append(build_paradigm(word, pars[suffix]))
+                        break
+            continue
+
+        if PoS in ["f", "m", 'm/f']:
+            for suffix in sorted(noun_pars[PoS], key=len, reverse=True):
+                if word.endswith(suffix):
+                    entries.append(build_paradigm(word, noun_pars[PoS][suffix]))
+                    checked = True
+                    break
+
+            if not checked:
                 not_defined.append((word, PoS))
+            #
+            # if word.endswith("i") and 'm' in PoS:
+            #     entries.append(build_paradigm(word, patri))
+            # elif word.endswith("i") and 'f' in PoS:
+            #     entries.append(build_paradigm(word, matri))
+            # elif word.endswith("i") and "m/f" in PoS:
+            #     entries.append(build_paradigm(word, visitaturi))
+            # elif word.endswith("u") and "m" in PoS:
+            #     entries.append(build_paradigm(word, annu))
+            # elif word.endswith("cu") and "m/f" in PoS:
+            #     entries.append(build_paradigm(word, nimicu))
+            # elif word.endswith("a") and "f" in PoS:
+            #     entries.append(build_paradigm(word, casa))
+            # elif word.endswith("a") and "m" in PoS:
+            #     entries.append(build_paradigm(word, pianeta))
+            # elif word.endswith("a") and "m/f" in PoS:
+            #     entries.append(build_paradigm(word, chitarrista))
+            #
+            # else:
+            #     not_defined.append((word, PoS))
 
         elif PoS == "adj":
-            for suffix in adj_pars:
+            for suffix in sorted(adj_pars, key=lambda x:len(x), reverse=True):
                 if word.endswith(suffix):
                     entries.append(build_paradigm(word, adj_pars[suffix]))
                     checked = True
+                    break
 
-            if checked:
-                continue
-
-            if word.endswith("u"):
-                entries.append(build_paradigm(word, beddu))
-            else:
+            if not checked:
                 not_defined.append((word, PoS))
+            else:
+                continue
 
         elif PoS == "adv":
             entries.append(build_paradigm(word, oggi))
 
         elif PoS == "v":
-            if is_accented(word):
+            if is_accented(word[:-3]):
                 not_defined.append((word, PoS))
                 continue
+            word = word.replace("ìri", "iri")
 
-            for suffix in verb_pars:
+            for suffix in sorted(verb_pars, key=lambda x:len(x), reverse=True):
                 if word.endswith(suffix):
                     pars = build_verb(word, verb_pars[suffix])
                     for par in pars:
                         entries.append(par)
                     checked = True
+                    break
 
             if checked:
                 continue
-
-            if word.endswith("ari"):
-                pars = build_verb(word, parrari)
-                for par in pars:
-                    entries.append(par)
+            else:
+                not_defined.append((word, PoS))
         else:
-            not_defined.append(word)
+            not_defined.append((word, PoS))
 
 
 print("========================================")
